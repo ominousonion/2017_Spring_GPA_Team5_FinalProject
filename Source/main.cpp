@@ -350,7 +350,6 @@ Scene LoadScene(const char* const filePath, const char* const directory) {
 			index[3 * f + 0] = mesh->mFaces[f].mIndices[0];
 			index[3 * f + 1] = mesh->mFaces[f].mIndices[1];
 			index[3 * f + 2] = mesh->mFaces[f].mIndices[2];
-
 		}
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sc.shapes[i].ibo);
