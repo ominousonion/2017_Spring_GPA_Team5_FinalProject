@@ -385,7 +385,7 @@ void My_Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	scene2_1 = LoadScene("./crytek-sponza/sponza.obj", "./crytek-sponza/");
+	scene2_1 = LoadScene("./forest_scenes_pier/pier.obj", "./forest_scenes_pier/");//"./crytek-sponza/sponza.obj", "./crytek-sponza/"
 	LoadSkybox();
 
 	program = glCreateProgram();
