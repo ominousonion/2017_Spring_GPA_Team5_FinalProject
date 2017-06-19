@@ -344,9 +344,13 @@ Scene LoadScene(const char* const filePath, const char* const directory) {
 
 		for (unsigned int f = 0; f < mesh->mNumFaces; ++f){
 			// mesh->mFaces[f].mIndices[0~2] => index
+			if (mesh->mFaces[f].mIndices[0] >= mesh->mNumVertices || mesh->mFaces[f].mIndices[1] >= mesh->mNumVertices || mesh->mFaces[f].mIndices[2] >= mesh->mNumVertices) {
+				continue;
+			}
 			index[3 * f + 0] = mesh->mFaces[f].mIndices[0];
 			index[3 * f + 1] = mesh->mFaces[f].mIndices[1];
 			index[3 * f + 2] = mesh->mFaces[f].mIndices[2];
+
 		}
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sc.shapes[i].ibo);
@@ -413,9 +417,9 @@ void My_Init()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//scene2_1 = LoadScene("./crytek-sponza/sponza.obj", "./crytek-sponza/");
-	//lakecity = LoadScene("./Lakecity/Lakecity.obj", "./Lakecity/");
+	lakecity = LoadScene("./Lakecity/Lakecity.obj", "./Lakecity/");
 	//city = LoadScene("./The City/The City.obj", "./The City/");
-	organodron = LoadScene("./Organodron City/Organodron City.obj", "./Organodron City/");
+	//organodron = LoadScene("./Organodron City/Organodron City.obj", "./Organodron City/");
 	//scidowntown = LoadScene("./scifi dowtown scenery/scifi dowtown scenery.obj", "./scifi dowtown scenery/");
 	//castle = LoadScene("./castle/castle.obj", "./castle/");
 
@@ -607,6 +611,11 @@ void DrawDepthMap(Scene scene) {
 	}
 }
 
+void DrawReflection(Scene scene) {
+	glViewport(0, 0, 1024, 1024);
+
+}
+
 void Regular() {
 	glUseProgram(regularProgram);
 	glActiveTexture(GL_TEXTURE0);
@@ -617,7 +626,7 @@ void Regular() {
 
 void My_Display()
 {
-	DrawDepthMap(organodron);
+	DrawDepthMap(lakecity);
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
 	glViewport(0, 0, window_size.x, window_size.y);
@@ -633,8 +642,8 @@ void My_Display()
 	view = lookAt(cam_eye, cam_center, cam_up);
 	
 	DrawSky();
-	DrawScene(organodron);
-	
+	DrawScene(lakecity);
+
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glViewport(0, 0, window_size.x, window_size.y);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -792,7 +801,7 @@ void My_Keyboard(unsigned char key, int x, int y)
 	default:
 		break;
 	}
-	printf("Key %c is pressed at (%d, %d)\n", key, x, y);
+	printf("cam_pos:(%f, %f, %f)\n", cam_eye.x, cam_eye.y, cam_eye.z);
 }
 
 void My_SpecialKeys(int key, int x, int y)
