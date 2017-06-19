@@ -1,0 +1,747 @@
+newmtl Landmark_4
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture5.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_5
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture9.jpg
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_6
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture6.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_2
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture7.jpg
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_7
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture7.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_3
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture8.jpg
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_1
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture4.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_10
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture3.jpg
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_9
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_12
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture2.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_8
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture0.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_14
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture3.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_11
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture1.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_15
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture8.png
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_16
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture10.jpg
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_13
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture4.jpg
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark_17
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture6.jpg
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Landmark
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/texture0.jpg
+    Kd 0.8 0.8 0.8
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture_4
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof4.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_14
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.4stories_4tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_15
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.4stories_4tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture_7
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof8.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_28
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_6tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_29
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_6tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture_8
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof5.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture_5
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof1.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_16
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_9tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture_3
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof9.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_24
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.4stories_3tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof2.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl CityEngineMaterial
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_11
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_9tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_2
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_8tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane_8
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.2.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane_4
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.5.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_18
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_5tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_13
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_7tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.4stories_1tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_23
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.4stories_3tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_12
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_3tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane_5
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.1.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_9
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_5tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_27
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_2tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl ParkGround
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/park_bright.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane_2
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.8.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_6
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_3tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_31
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_9tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_25
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_7tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane_7
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.6.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture_1
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof3.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_30
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_3tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Walkway
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/streets.color.mid_red.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_20
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.5stories_4tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane_6
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.9.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_4
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_6tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_21
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_4tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture_2
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof6.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_19
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.5stories_4tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane_1
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.4.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_17
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_5tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_3
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_8tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_7
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_3tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_8
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_5tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_26
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.2stories_2tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_22
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_4tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_5
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_6tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl PlatformTop
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/streets.color.bright2.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane_3
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.7.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_10
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.3stories_9tiles.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl RoofPlane
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/rooftile.3.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl PlatformSides
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/base.1.jpg
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl lambert3SG
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/tree_texture.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl lambert2SG
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    Kd 0.4 0.27 0.18
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl Facade_1
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/ven.4stories_1tiles.jpg
+    Kd 0.6 0.6 0.6
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
+newmtl FlatRoofTexture_6
+    illum 3
+    Ks 0 0 0
+    Ns 0
+    map_Kd texture/flatroof7.png
+    Kd 1 1 1
+    d 1
+    Ka 0 0 0
+    Tf 1.0 1.0 1.0
+    Ni 1.0
