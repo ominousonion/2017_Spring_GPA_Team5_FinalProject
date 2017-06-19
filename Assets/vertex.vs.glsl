@@ -6,9 +6,12 @@ layout(location = 2) in vec3 iv3normal;
 
 uniform mat4 um4mv;
 uniform mat4 um4p;
+uniform mat4 um4shadow;
+uniform vec3 uv3lightpos;
 
 out VertexData
 {
+	vec4 shadow_coord;
     vec3 N; // eye space normal
     vec3 L; // eye space light vector
     vec3 H; // eye space halfway vector
@@ -17,7 +20,6 @@ out VertexData
 
 void main()
 {
-	vec3 light_dir = vec3(1.0, 1.0, 1.0);
 	vec4 P = um4mv * vec4(iv3vertex, 1.0);
 
 	gl_Position = um4p * um4mv * vec4(iv3vertex, 1.0);
@@ -25,6 +27,7 @@ void main()
 
 	vec3 V = -P.xyz;
 	vertexData.N = normalize(mat3(um4mv) * iv3normal);
-	vertexData.L = normalize(light_dir);
+	vertexData.L = normalize(uv3lightpos + V);
 	vertexData.H = normalize(vertexData.L + V);
+	vertexData.shadow_coord = um4shadow * vec4(iv3vertex, 1.0);
 }
