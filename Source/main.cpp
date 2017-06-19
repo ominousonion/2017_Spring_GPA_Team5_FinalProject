@@ -8,6 +8,7 @@ GLubyte timer_cnt = 0;
 bool timer_enabled = true;
 unsigned int timer_speed = 16;
 float movementSpeed = 500;
+const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 using namespace glm;
 using namespace std;
@@ -15,14 +16,28 @@ using namespace std;
 GLuint program;
 GLuint skyProgram;
 GLuint regularProgram;
+GLuint depthProgram;
 
 mat4 model;
 mat4 view;
 mat4 proj_matrix;
 
+vec3 light_eye;
+vec3 light_up;
+vec3 light_center;
+vec3 default_ambient = vec3(0.7);
+mat4 light_view_matrix;
+mat4 light_proj_matrix;
+
 GLint um4mv;
 GLint um4p;
+GLint um4shadow;
+GLint uv3lightpos;
+GLint depth_um4mv;
+GLint depth_um4p;
+
 GLuint tex;
+GLuint shadowMap;
 GLuint alpha;
 GLuint Ka;
 GLuint Kd;
@@ -44,6 +59,8 @@ GLuint FBO;
 GLuint depthRBO;
 GLuint FBODataTexture;
 GLuint noiseTexture;
+GLuint depth_fbo;
+GLuint depth_tex;
 
 static const GLfloat window_positions[] =
 {
@@ -182,6 +199,11 @@ TextureData loadPNG(const char* const pngFilepath)
 }
 
 Scene scene2_1;
+Scene lakecity;
+Scene city;
+Scene organodron;
+Scene scidowntown;
+Scene castle;
 
 int mode = 0;
 
@@ -219,7 +241,7 @@ Scene LoadScene(const char* const filePath, const char* const directory) {
 			TextureData textureData = loadPNG(file.C_Str());
 			glGenTextures(1, &sc.materials[i].diffuse_tex);
 			glBindTexture(GL_TEXTURE_2D, sc.materials[i].diffuse_tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, textureData.width, textureData.height, 0,GL_RGBA, GL_UNSIGNED_BYTE, textureData.data);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureData.width, textureData.height, 0,GL_RGBA, GL_UNSIGNED_BYTE, textureData.data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 			sc.materials[i].a = 1.0;
 		}
@@ -229,14 +251,19 @@ Scene LoadScene(const char* const filePath, const char* const directory) {
 			TextureData textureData = loadPNG("default.png");
 			glGenTextures(1, &sc.materials[i].diffuse_tex);
 			glBindTexture(GL_TEXTURE_2D, sc.materials[i].diffuse_tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, textureData.width, textureData.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData.data);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureData.width, textureData.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData.data);
 			glGenerateMipmap(GL_TEXTURE_2D);
-			sc.materials[i].a = 0.0;
+			sc.materials[i].a = 1.0;
 		}
 
 		aiColor3D a;
 		if (material->Get(AI_MATKEY_COLOR_AMBIENT, a) == aiReturn_SUCCESS) {
-			sc.materials[i].Ka = vec3(a.r,a.g,a.b);
+			if (a.r == 0 && a.g == 0 && a.b == 0) {
+				sc.materials[i].Ka = default_ambient;
+			}
+			else {
+				sc.materials[i].Ka = vec3(a.r, a.g, a.b);
+			}
 		}
 		else {
 			sc.materials[i].Ka = vec3(1, 1, 1);
@@ -385,9 +412,15 @@ void My_Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	scene2_1 = LoadScene("./crytek-sponza/sponza.obj", "./crytek-sponza/");
-	LoadSkybox();
+	//scene2_1 = LoadScene("./crytek-sponza/sponza.obj", "./crytek-sponza/");
+	//lakecity = LoadScene("./Lakecity/Lakecity.obj", "./Lakecity/");
+	//city = LoadScene("./The City/The City.obj", "./The City/");
+	organodron = LoadScene("./Organodron City/Organodron City.obj", "./Organodron City/");
+	//scidowntown = LoadScene("./scifi dowtown scenery/scifi dowtown scenery.obj", "./scifi dowtown scenery/");
+	//castle = LoadScene("./castle/castle.obj", "./castle/");
 
+	LoadSkybox();
+	
 	program = glCreateProgram();
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -406,7 +439,10 @@ void My_Init()
 	glLinkProgram(program);
 	um4mv = glGetUniformLocation(program, "um4mv");
 	um4p = glGetUniformLocation(program, "um4p");
+	um4shadow = glGetUniformLocation(program, "um4shadow");
+	uv3lightpos = glGetUniformLocation(program, "uv3lightpos");
 	tex = glGetUniformLocation(program, "tex");
+	shadowMap = glGetUniformLocation(program, "shadowMap");
 	alpha = glGetUniformLocation(program, "alpha");
 	Ka = glGetUniformLocation(program, "Ka");
 	Kd = glGetUniformLocation(program, "Kd");
@@ -448,6 +484,25 @@ void My_Init()
 	glAttachShader(regularProgram, regularVertexShader);
 	glAttachShader(regularProgram, regularFragmentShader);
 	glLinkProgram(regularProgram);
+	
+	depthProgram = glCreateProgram();
+	GLuint depthVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint depthFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	char** depthVertexShaderSource = loadShaderSource("depth.vs.glsl");
+	char** depthFragmentShaderSource = loadShaderSource("depth.fs.glsl");
+	glShaderSource(depthVertexShader, 1, depthVertexShaderSource, NULL);
+	glShaderSource(depthFragmentShader, 1, depthFragmentShaderSource, NULL);
+	freeShaderSource(depthVertexShaderSource);
+	freeShaderSource(depthFragmentShaderSource);
+	glCompileShader(depthVertexShader);
+	glCompileShader(depthFragmentShader);
+	shaderLog(depthVertexShader);
+	shaderLog(depthFragmentShader);
+	glAttachShader(depthProgram, depthVertexShader);
+	glAttachShader(depthProgram, depthFragmentShader);
+	glLinkProgram(depthProgram);
+	depth_um4mv = glGetUniformLocation(depthProgram, "um4mv");
+	depth_um4p = glGetUniformLocation(depthProgram, "um4p");
 
 	glGenVertexArrays(1, &window_vao);
 	glBindVertexArray(window_vao);
@@ -465,29 +520,58 @@ void My_Init()
 	cam_eye = vec3(0.0f, 150.0f, 0.0f);
 	cam_up = vec3(0.0f, 1.0f, 0.0f);
 	forward_vec = vec3(1.0f, 0.0f, 0.0f);
+	light_eye = vec3(-200.0f, 200.0f, 100.0f);
+	light_up = vec3(0.0f, 1.0f, 0.0f);
+	light_center = vec3(0.0f, 0.0f, 0.0f);
 	cam_center = cam_eye + forward_vec;
 	
 	model = translate(mat4(1.0f), modle_pos);
-	
+
+	light_proj_matrix = frustum(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1000.0f);
+	light_view_matrix = lookAt(light_eye, light_center, light_up);
+
+	glGenFramebuffers(1, &depth_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
+	glGenTextures(1, &depth_tex);
+	glBindTexture(GL_TEXTURE_2D, depth_tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
+
 	My_Reshape(600, 600);
 }
 
-void DrawScene() {
+void DrawScene(Scene scene) {
 	glUseProgram(program);
 	glUniformMatrix4fv(um4mv, 1, GL_FALSE, value_ptr(view * model));
 	glUniformMatrix4fv(um4p, 1, GL_FALSE, value_ptr(proj_matrix));
 	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(tex, 0);
+	glUniform1i(shadowMap, 0);
+	glBindTexture(GL_TEXTURE_2D, depth_tex);
+	glActiveTexture(GL_TEXTURE1);
+	glUniform1i(tex, 1);
 
-	for (unsigned int i = 0; i < scene2_1.meshNum; ++i) {
-		glBindVertexArray(scene2_1.shapes[i].vao);
-		int materialID = scene2_1.shapes[i].materialID;
-		glBindTexture(GL_TEXTURE_2D, scene2_1.materials[materialID].diffuse_tex);
-		glUniform1f(alpha, scene2_1.materials[materialID].a);
-		glUniform3fv(Ka, 1, value_ptr(scene2_1.materials[materialID].Ka));
-		glUniform3fv(Kd, 1, value_ptr(scene2_1.materials[materialID].Kd));
-		glUniform3fv(Ks, 1, value_ptr(scene2_1.materials[materialID].Ks));
-		glDrawElements(GL_TRIANGLES, scene2_1.shapes[i].drawCount, GL_UNSIGNED_INT, 0);
+	mat4 scale_bias_matrix = translate(mat4(), vec3(0.5f, 0.5f, 0.5f));
+	scale_bias_matrix = scale(scale_bias_matrix, vec3(0.5f, 0.5f, 0.5f));
+	mat4 shadow_sbpv_matrix = scale_bias_matrix*light_proj_matrix* light_view_matrix;
+	mat4 shadow_matrix = shadow_sbpv_matrix * model;
+	glUniformMatrix4fv(um4shadow, 1, GL_FALSE, value_ptr(shadow_matrix));
+	glUniform3fv(uv3lightpos, 1, value_ptr(light_eye));
+
+	for (unsigned int i = 0; i < scene.meshNum; ++i) {
+		glBindVertexArray(scene.shapes[i].vao);
+		int materialID = scene.shapes[i].materialID;
+		glBindTexture(GL_TEXTURE_2D, scene.materials[materialID].diffuse_tex);
+		glUniform1f(alpha, scene.materials[materialID].a);
+		glUniform3fv(Ka, 1, value_ptr(scene.materials[materialID].Ka));
+		glUniform3fv(Kd, 1, value_ptr(scene.materials[materialID].Kd));
+		glUniform3fv(Ks, 1, value_ptr(scene.materials[materialID].Ks));
+		glDrawElements(GL_TRIANGLES, scene.shapes[i].drawCount, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 }
@@ -505,10 +589,27 @@ void DrawSky() {
 	glBindVertexArray(0);
 }
 
+void DrawDepthMap(Scene scene) {
+	glEnable(GL_DEPTH_TEST);
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT); 
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(4.0f, 4.0f);
+	glUseProgram(depthProgram);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUniformMatrix4fv(depth_um4mv, 1, GL_FALSE, value_ptr(light_view_matrix * model));
+	glUniformMatrix4fv(depth_um4p, 1, GL_FALSE, value_ptr(light_proj_matrix));
+
+	for (unsigned int i = 0; i < scene.meshNum; ++i) {
+		glBindVertexArray(scene.shapes[i].vao);
+		glDrawElements(GL_TRIANGLES, scene.shapes[i].drawCount, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+	}
+}
+
 void Regular() {
 	glUseProgram(regularProgram);
 	glActiveTexture(GL_TEXTURE0);
-
 	glBindVertexArray(window_vao);
 	glBindTexture(GL_TEXTURE_2D, FBODataTexture);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -516,8 +617,10 @@ void Regular() {
 
 void My_Display()
 {
+	DrawDepthMap(organodron);
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
+	glViewport(0, 0, window_size.x, window_size.y);
 	glDrawBuffer(FBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -530,9 +633,10 @@ void My_Display()
 	view = lookAt(cam_eye, cam_center, cam_up);
 	
 	DrawSky();
-	DrawScene();
+	DrawScene(organodron);
 	
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glViewport(0, 0, window_size.x, window_size.y);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	Regular();

@@ -84,6 +84,8 @@
     <ClCompile Include="..\Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Assets\depth.fs.glsl" />
+    <None Include="..\Assets\depth.vs.glsl" />
     <None Include="..\Assets\fragment.fs.glsl" />
     <None Include="..\Assets\regular.fs.glsl" />
     <None Include="..\Assets\regular.vs.glsl" />
