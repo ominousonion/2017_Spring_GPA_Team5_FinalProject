@@ -95,6 +95,8 @@
     <None Include="..\Assets\skyfragment.fs.glsl" />
     <None Include="..\Assets\skyvertex.vs.glsl" />
     <None Include="..\Assets\vertex.vs.glsl" />
+    <None Include="..\Assets\waterfragment.fs.glsl" />
+    <None Include="..\Assets\watervertex.vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -17,6 +17,7 @@ GLuint program;
 GLuint skyProgram;
 GLuint regularProgram;
 GLuint depthProgram;
+GLuint waterProgram;
 
 mat4 model;
 mat4 view;
@@ -61,6 +62,10 @@ GLuint FBODataTexture;
 GLuint noiseTexture;
 GLuint depth_fbo;
 GLuint depth_tex;
+
+GLuint water_tex;
+GLint water_um4mv;
+GLint water_um4p;
 
 static const GLfloat window_positions[] =
 {
@@ -156,6 +161,9 @@ typedef struct Scene
 	unsigned int meshNum;
 	unsigned int materialNum;
 }Scene;
+
+TextureData WaterTextureData[100];
+int WaterTimer = 0;
 
 // load a png image and return a TextureData structure with raw data
 // not limited to png format. works with any image format that is RGBA-32bit
@@ -344,9 +352,13 @@ Scene LoadScene(const char* const filePath, const char* const directory) {
 
 		for (unsigned int f = 0; f < mesh->mNumFaces; ++f){
 			// mesh->mFaces[f].mIndices[0~2] => index
+			if (mesh->mFaces[f].mIndices[0] >= mesh->mNumVertices || mesh->mFaces[f].mIndices[1] >= mesh->mNumVertices || mesh->mFaces[f].mIndices[2] >= mesh->mNumVertices) {
+				continue;
+			}
 			index[3 * f + 0] = mesh->mFaces[f].mIndices[0];
 			index[3 * f + 1] = mesh->mFaces[f].mIndices[1];
 			index[3 * f + 2] = mesh->mFaces[f].mIndices[2];
+
 		}
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sc.shapes[i].ibo);
@@ -404,6 +416,16 @@ void LoadSkybox() {
 	glBindVertexArray(0);
 }
 
+void LoadWater() {
+	char str[] = "./water/color/water_079_c_0001.jpg"; //27 28 29
+	for (int i = 1; i <= 100; i++) {
+		int first = i / 100, second = (i / 10) % 10, third = i % 10;
+		str[27] = first + '0'; str[28] = second + '0'; str[29] = third + '0';
+		WaterTextureData[i-1] = loadPNG(str);
+	}
+	
+}
+
 void My_Init()
 {
     glClearColor(0.0f, 0.6f, 0.0f, 1.0f);
@@ -412,7 +434,10 @@ void My_Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	scene2_1 = LoadScene("./Damaged Downtown/Downtown_Damage_0.obj", "./Damaged Downtown/");
+	//scene2_1 = LoadScene("./water/flow.obj", "./water/");
+	scene2_1 = LoadScene("./Venice/venice.obj", "./Venice/");
+	//scene2_1 = LoadScene("./Medieval/Medieval_City.obj", "./Medieval/");
+	//scene2_1 = LoadScene("./Damaged Downtown/Downtown_Damage_0.obj", "./Damaged Downtown/");
 	//scene2_1 = LoadScene("./obj/obj.obj", "./obj");
 	//scene2_1 = LoadScene("./Sirus5 Colonial City/sirus city.obj", "./Sirus5 Colonial City");
 	//scene2_1 = LoadScene("./colony sector/colony sector.obj", "./colony sector");
@@ -422,12 +447,14 @@ void My_Init()
 	//scene2_1 = LoadScene("./serpertine city/serpertine city.obj", "./serpertine city/");
 	//scene2_1 = LoadScene("./scifi tropical city/Sci-fi Tropical city.obj", "./scifi tropical city/");
 	//scene2_1 = LoadScene("./crytek-sponza/sponza.obj", "./crytek-sponza/");
-	//lakecity = LoadScene("./Lakecity/Lakecity.obj", "./Lakecity/");
+	//scene2_1 = LoadScene("./Lakecity/Lakecity.obj", "./Lakecity/");
 	//city = LoadScene("./The City/The City.obj", "./The City/");
 	//organodron = LoadScene("./Organodron City/Organodron City.obj", "./Organodron City/");
 	//scidowntown = LoadScene("./scifi dowtown scenery/scifi dowtown scenery.obj", "./scifi dowtown scenery/");
 	//castle = LoadScene("./castle/castle.obj", "./castle/");
 
+	//LoadWater
+	LoadWater();
 
 	LoadSkybox();
 	
@@ -514,6 +541,26 @@ void My_Init()
 	depth_um4mv = glGetUniformLocation(depthProgram, "um4mv");
 	depth_um4p = glGetUniformLocation(depthProgram, "um4p");
 
+	waterProgram = glCreateProgram();
+	GLuint waterVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint waterFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	char** waterVertexShaderSource = loadShaderSource("watervertex.vs.glsl");
+	char** waterFragmentShaderSource = loadShaderSource("waterfragment.fs.glsl");
+	glShaderSource(waterVertexShader, 1, waterVertexShaderSource, NULL);
+	glShaderSource(waterFragmentShader, 1, waterFragmentShaderSource, NULL);
+	freeShaderSource(waterVertexShaderSource);
+	freeShaderSource(waterFragmentShaderSource);
+	glCompileShader(waterVertexShader);
+	glCompileShader(waterFragmentShader);
+	shaderLog(waterVertexShader);
+	shaderLog(waterFragmentShader);
+	glAttachShader(waterProgram, waterVertexShader);
+	glAttachShader(waterProgram, waterFragmentShader);
+	glLinkProgram(waterProgram);
+	water_um4mv = glGetUniformLocation(waterProgram, "um4mv");
+	water_um4p = glGetUniformLocation(waterProgram, "um4p");
+	water_tex = glGetUniformLocation(waterProgram, "tex");
+
 	glGenVertexArrays(1, &window_vao);
 	glBindVertexArray(window_vao);
 	glGenBuffers(1, &window_buffer);
@@ -554,6 +601,87 @@ void My_Init()
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
 
 	My_Reshape(600, 600);
+}
+
+void DrawWater() {
+	glUseProgram(waterProgram);
+	glUniformMatrix4fv(water_um4mv, 1, GL_FALSE, value_ptr(view * model));
+	glUniformMatrix4fv(water_um4p, 1, GL_FALSE, value_ptr(proj_matrix));
+
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	//Enable shader layout location 0 and 1 for vertex and color   
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	//Create buffer and bind it to OpenGL
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+
+	float seaDep = -10.0f;
+	float sea_X = -100.0f;
+	float sea_Z = -500.0f;
+
+	float data[18] = {
+
+		sea_X + 0.0f,   seaDep, sea_Z + 100.0f,
+		sea_X + 0.0f,   seaDep, sea_Z + 0.0f,
+		sea_X + 100.0f, seaDep, sea_Z + 0.0f,
+		sea_X + 0.0f,   seaDep, sea_Z + 100.0f,
+		sea_X + 100.0f, seaDep, sea_Z + 0.0f,
+		sea_X + 100.0f, seaDep, sea_Z + 100.0f,
+
+	};
+
+	float texcoords[] = {
+		0.0, 1.0,
+		0.0, 0.0,
+		1.0, 0.0,
+		0.0, 1.0,
+		1.0, 0.0,
+		1.0, 1.0
+	};
+	GLuint waterTex;
+
+	glGenTextures(1, &waterTex);
+	glBindTexture(GL_TEXTURE_2D, waterTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WaterTextureData[WaterTimer/3].width, WaterTextureData[WaterTimer/3].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, WaterTextureData[WaterTimer/3].data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glUniform1i(water_tex, 1);
+
+	GLuint vertexbuffer, texbuffer;
+	
+	glGenBuffers(1, &texbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, texbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, texbuffer);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	for (int i = 0; i < 60; i++) {
+		for (int cnt = 0; cnt < 6; cnt++) {
+			data[cnt * 3] += 6000.0f;
+			data[2 + cnt * 3] += 100.0f;
+		}
+		for (int j = 0; j < 60; j++) {
+			for (int cnt = 0; cnt < 6; cnt++) data[cnt*3] -= 100.0f;
+
+			glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+			glEnableVertexAttribArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+	}
+
+	WaterTimer++;
+	if (WaterTimer == 300) WaterTimer = 0;
 }
 
 void DrawScene(Scene scene) {
@@ -617,6 +745,11 @@ void DrawDepthMap(Scene scene) {
 	}
 }
 
+void DrawReflection(Scene scene) {
+	glViewport(0, 0, 1024, 1024);
+
+}
+
 void Regular() {
 	glUseProgram(regularProgram);
 	glActiveTexture(GL_TEXTURE0);
@@ -644,13 +777,14 @@ void My_Display()
 	
 	DrawSky();
 	DrawScene(scene2_1);
-	
+	DrawWater();
+
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glViewport(0, 0, window_size.x, window_size.y);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	Regular();
-	
+
     glutSwapBuffers();
 }
 
@@ -802,7 +936,7 @@ void My_Keyboard(unsigned char key, int x, int y)
 	default:
 		break;
 	}
-	printf("Key %c is pressed at (%d, %d)\n", key, x, y);
+	printf("cam_pos:(%f, %f, %f)\n", cam_eye.x, cam_eye.y, cam_eye.z);
 }
 
 void My_SpecialKeys(int key, int x, int y)
