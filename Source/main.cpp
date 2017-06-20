@@ -193,7 +193,7 @@ TextureData WaterTextureData[100];
 int WaterTimer = 0;
 float seaDep = -2.5; //seaDep must be less than a constant(0 now) or it will be strange
 
-enum SceneObject {Venice, Balloon1, Balloon2, Balloon3};
+enum SceneObject {Venice, Balloon1, Balloon2, Balloon3, SmallBoat};
 
 // load a png image and return a TextureData structure with raw data
 // not limited to png format. works with any image format that is RGBA-32bit
@@ -241,7 +241,6 @@ Scene venice;
 Scene balloon;
 
 vec3 balloon1_pos = vec3(1600.0, 200.0, 1000.0);
-<<<<<<< HEAD
 vec3 balloon2_pos = vec3(4000.0, 250.0, 2500.0);
 vec3 balloon3_pos = vec3(2500.0, 150.0, 3000.0);
 vec3 boat_route[24] = { vec3(1330.0f, 0.0f, 1140.0f), vec3(1500.0f, 0.0f, 1307.0f), vec3(1656.0f, 0.0f, 1049.0f), vec3(1928.0f, 0.0f, 858.0f),  //4
@@ -256,10 +255,7 @@ float boat_speed = 2.0f;
 bool boat_move = false;
 float boat_turn_acos;
 int boat_smooth_rotate = 10;
-=======
-vec3 balloon2_pos = vec3(4000.0, 500.0, 2500.0);
-vec3 balloon3_pos = vec3(6000.0, 300.0, 5000.0);
->>>>>>> da5b075a0d5c79f50a2a4eff4267bf7810b28b7c
+
 
 int mode = 0;
 
@@ -807,13 +803,10 @@ void DrawScene(Scene scene, SceneObject SObject) {
 		extraTrans = translate(mat4(1.0), balloon3_pos);
 		extraScale = scale(mat4(1.0), vec3(0.6, 0.6, 0.6));
 	}
-<<<<<<< HEAD
 	else if (SObject == SceneObject::SmallBoat) {
 		extraTrans = translate(mat4(1.0), boat_now_pos + vec3(0.0,-1.4,0.0));
 		extraRotate = rotate(mat4(1.0), boat_turn_acos, vec3(0.0, 1.0, 0.0));
 	}
-=======
->>>>>>> da5b075a0d5c79f50a2a4eff4267bf7810b28b7c
 
 	glUniformMatrix4fv(um4mv, 1, GL_FALSE, value_ptr(view * model * extraTrans*extraScale*extraRotate));
 	glUniformMatrix4fv(um4p, 1, GL_FALSE, value_ptr(proj_matrix));
@@ -1140,12 +1133,7 @@ void My_Keyboard(unsigned char key, int x, int y)
 		cam_eye = balloon1_pos + vec3(0.0, 13.0, 0.0);
 		break;
 	case '2':
-<<<<<<< HEAD
 		cam_eye = balloon2_pos + vec3(0.0, 11.0, 0.0);
-=======
-		//moving speed +:
-		cam_eye = balloon2_pos + vec3(0.0, 10.0, 0.0);
->>>>>>> da5b075a0d5c79f50a2a4eff4267bf7810b28b7c
 		break;
 	case '3':
 		cam_eye = balloon3_pos + vec3(0.0, 15.0, 0.0);
