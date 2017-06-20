@@ -382,12 +382,12 @@ void LoadSkybox() {
 	glGenTextures(1, &skyboxTex.diffuse_tex);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex.diffuse_tex);
 	const char* const face[6] = {
-		"./ame_desert/right.png",
-		"./ame_desert/left.png",
-		"./ame_desert/up.png",
-		"./ame_desert/down.png",
-		"./ame_desert/back.png",
-		"./ame_desert/front.png"
+		"./clouds1/clouds1_east.bmp",
+		"./clouds1/clouds1_west.bmp",
+		"./clouds1/clouds1_up.bmp",
+		"./clouds1/clouds1_down.bmp",
+		"./clouds1/clouds1_south.bmp",
+		"./clouds1/clouds1_north.bmp"
 	};
 
 	for (unsigned i = 0; i < 6; i++) {
@@ -434,8 +434,10 @@ void My_Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	
+	scene2_1 = LoadScene("./Airbus A310/Airbus A310.obj", "./Airbus A310");
 	//scene2_1 = LoadScene("./water/flow.obj", "./water/");
-	scene2_1 = LoadScene("./Venice/venice.obj", "./Venice/");
+	//scene2_1 = LoadScene("./Venice/venice.obj", "./Venice/");
 	//scene2_1 = LoadScene("./Medieval/Medieval_City.obj", "./Medieval/");
 	//scene2_1 = LoadScene("./Damaged Downtown/Downtown_Damage_0.obj", "./Damaged Downtown/");
 	//scene2_1 = LoadScene("./obj/obj.obj", "./obj");
