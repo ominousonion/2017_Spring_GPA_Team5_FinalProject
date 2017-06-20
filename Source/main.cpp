@@ -8,7 +8,7 @@ GLubyte timer_cnt = 0;
 bool timer_enabled = true;
 unsigned int timer_speed = 16;
 float movementSpeed = 500;
-const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
+const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 using namespace glm;
 using namespace std;
@@ -241,7 +241,18 @@ Scene boat;
 vec3 balloon1_pos = vec3(1600.0, 200.0, 1000.0);
 vec3 balloon2_pos = vec3(4000.0, 250.0, 2500.0);
 vec3 balloon3_pos = vec3(2500.0, 150.0, 3000.0);
-vec3 boat_route = vec3(1330.0, 0.0, 1140.0);
+vec3 boat_route[24] = { vec3(1330.0f, 0.0f, 1140.0f), vec3(1500.0f, 0.0f, 1307.0f), vec3(1656.0f, 0.0f, 1049.0f), vec3(1928.0f, 0.0f, 858.0f),  //4
+	vec3(2126.0f, 0.0f, 820.0f), vec3(2327.0f, 0.0f, 851.0f), vec3(2560.0f, 0.0f, 978.0f), vec3(2691.0f, 0.0f, 1051.0f), vec3(2722.0f, 0.0f, 1083.0f), //9
+	vec3(2746.0f, 0.0f, 1117.0f), vec3(2762.0f, 0.0f, 1149.0f), vec3(2746.0f, 0.0f, 1227.0f), vec3(2705.0f, 0.0f, 1306.0f), vec3(2339.0f, 0.0f, 1533.0f), //14
+	vec3(2139.0f, 0.0f, 1675.0f), vec3(2152.0f, 0.0f, 1792.0f), vec3(2195.0f, 0.0f, 1905.0f), vec3(2278.0f, 0.0f, 1978.0f), vec3(2390.0f, 0.0f, 2013.0f), //19
+	vec3(2545.0f, 0.0f, 2010.0f), vec3(2925.0f, 0.0f, 1932.0f), vec3(3594.0f, 0.0f, 1910.0f), vec3(3996.0f, 0.0f, 2492.0f), vec3(4052.0f, 0.0f, 2857.0f), };
+vec3 boat_now_pos = vec3(1330.0, 0.0, 1140.0);
+int boat_now_point = 1;
+int boat_point_num = 24;
+float boat_speed = 2.0f;
+bool boat_move = false;
+float boat_turn_acos;
+int boat_smooth_rotate = 10;
 
 int mode = 0;
 
@@ -764,6 +775,7 @@ void DrawScene(Scene scene, SceneObject SObject) {
 
 	mat4 extraTrans = mat4(1.0);
 	mat4 extraScale = mat4(1.0);
+	mat4 extraRotate = mat4(1.0);
 	if (SObject == SceneObject::Balloon1) {
 		extraTrans = translate(mat4(1.0), balloon1_pos);
 		extraScale = scale(mat4(1.0), vec3(0.5,0.5,0.5));
@@ -775,11 +787,11 @@ void DrawScene(Scene scene, SceneObject SObject) {
 		extraScale = scale(mat4(1.0), vec3(0.6, 0.6, 0.6));
 	}
 	else if (SObject == SceneObject::SmallBoat) {
-		extraTrans = translate(mat4(1.0), boat_route);
-		//extraScale = scale(mat4(1.0), vec3(0.6, 0.6, 0.6));
+		extraTrans = translate(mat4(1.0), boat_now_pos + vec3(0.0,-1.4,0.0));
+		extraRotate = rotate(mat4(1.0), boat_turn_acos, vec3(0.0, 1.0, 0.0));
 	}
 
-	glUniformMatrix4fv(um4mv, 1, GL_FALSE, value_ptr(view * model * extraTrans));
+	glUniformMatrix4fv(um4mv, 1, GL_FALSE, value_ptr(view * model * extraTrans*extraScale*extraRotate));
 	glUniformMatrix4fv(um4p, 1, GL_FALSE, value_ptr(proj_matrix));
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(shadowMap, 0);
@@ -912,6 +924,26 @@ void My_Display()
 	
 	Regular();
 
+	if (boat_move) {
+		boat_now_pos = boat_now_pos + boat_speed * normalize((boat_route[boat_now_point] - boat_route[boat_now_point - 1]));
+		cam_eye = boat_now_pos + vec3(0.0f, 0.2f, 0.0f);
+
+		if (distance(boat_now_pos, boat_route[boat_now_point]) <= boat_speed * 5) {
+			//boat_prev_acos = boat_turn_acos;
+			boat_now_point++;
+			boat_turn_acos = acos(dot(normalize(boat_route[boat_now_point] - boat_now_pos), normalize(vec3(0.0f, 0.0f, 1.0f))));
+			if (cross(normalize(boat_route[boat_now_point] - boat_route[boat_now_point - 1]), normalize(vec3(0.0f, 0.0f, 1.0f))).y > 0.0f) boat_turn_acos = -boat_turn_acos;
+
+			if (boat_point_num == boat_now_point) boat_move = false;
+		}
+	}
+	else {
+		if (boat_now_point == 1) {
+			boat_turn_acos = acos(dot(normalize(boat_route[boat_now_point] - boat_route[boat_now_point - 1]), normalize(vec3(0.0f, 0.0f, 1.0f))));
+			if (cross(normalize(boat_route[boat_now_point] - boat_route[boat_now_point - 1]), normalize(vec3(0.0f, 0.0f, 1.0f))).y > 0.0f) boat_turn_acos = -boat_turn_acos;
+		}
+	}
+
     glutSwapBuffers();
 }
 
@@ -956,6 +988,7 @@ void My_Timer(int val)
 	{
 		glutTimerFunc(timer_speed, My_Timer, val);
 	}
+
 }
 
 bool firstMouse = true;
@@ -1067,20 +1100,34 @@ void My_Keyboard(unsigned char key, int x, int y)
 		if(movementSpeed < 990)movementSpeed +=50;
 		break;
 	case '-':
-		//moving speed +:
+		//moving speed -:
 		if (movementSpeed > 60)movementSpeed -= 50;
 		break;
 	case '1':
-		//moving speed +:
 		cam_eye = balloon1_pos + vec3(0.0, 13.0, 0.0);
 		break;
 	case '2':
-		//moving speed +:
 		cam_eye = balloon2_pos + vec3(0.0, 11.0, 0.0);
 		break;
 	case '3':
-		//moving speed +:
 		cam_eye = balloon3_pos + vec3(0.0, 15.0, 0.0);
+		break;
+	case '4':		
+		cam_eye = boat_route[0] + vec3(0.0, 1.6, 0.0);
+		boat_now_pos = boat_route[0];
+		boat_now_point = 1;
+		boat_move = false;
+		break;
+	case 'r':
+		if (!boat_move && boat_now_point != boat_point_num) {
+			boat_move = true;
+		}
+		else {
+			boat_move = false;
+		}
+		break;
+	case '5':
+		
 		break;
 	default:
 		break;
