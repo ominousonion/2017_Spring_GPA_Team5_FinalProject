@@ -33,7 +33,16 @@ void main()
 	vec3 ambient = texColor * Ka;
 	vec3 diffuse = texColor * Kd * theta;
 	vec3 specular = vec3(1,1,1) * Ks * pow(phi, 1000);
-	vec3 lighting = (ambient + (textureProj(shadowMap, vertexData.shadow_coord)) * vec3(diffuse + specular));
+	float shadow = textureProj(shadowMap, vertexData.shadow_coord);
+	
+	vec3 lighting;
+	
+	if(shadow == 1){
+		lighting = (ambient + (textureProj(shadowMap, vertexData.shadow_coord)) * vec3(diffuse + specular));
+	}
+	else{
+		lighting = (ambient * 0.5 + (textureProj(shadowMap, vertexData.shadow_coord)) * vec3(diffuse + specular));
+	}
 	fragColor = vec4(lighting, alpha);
 	
 }
