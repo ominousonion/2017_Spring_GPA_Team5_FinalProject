@@ -8,7 +8,7 @@ GLubyte timer_cnt = 0;
 bool timer_enabled = true;
 unsigned int timer_speed = 16;
 float movementSpeed = 500;
-const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
 
 using namespace glm;
 using namespace std;
@@ -708,9 +708,9 @@ void My_Init()
 	cam_eye = vec3(0.0f, 150.0f, 0.0f);
 	cam_up = vec3(0.0f, 1.0f, 0.0f);
 	forward_vec = vec3(1.0f, 0.0f, 0.0f);
-	light_eye = vec3(4000.0f, 1500.0f, 2000.0f);
+	light_eye = vec3(-400.0f, 1500.0f, 400.0f);
 	light_up = vec3(0.0f, 1.0f, 0.0f);
-	light_center = vec3(0.0f, 0.0f, 0.0f);
+	light_center = vec3(1800.0f, 0.0f, 1200.0f);
 	cam_center = cam_eye + forward_vec;
 	
 	model = translate(mat4(1.0f), modle_pos);
@@ -845,7 +845,7 @@ void DrawDepthMap(Scene scene) {
 	glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT); 
 	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(4.0f, 4.0f);
+	glPolygonOffset(1.0f, 1.0f);
 	glUseProgram(depthProgram);
 	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
