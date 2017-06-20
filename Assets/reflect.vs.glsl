@@ -26,12 +26,10 @@ void main()
 	vec4 P = um4mv * vec4(iv3vertex, 1.0);
 
 	vec4 position = vec4(iv3vertex, 1.0);
-	//if(position.y > seaDep ){
-		position.y = -position.y + 2 * seaDep;
-		gl_Position = um4p * um4mv * position;
-	//}else{
-		//vertexData.draw = -1.0;
-	//}
+	
+	position.y = -position.y + 2 * seaDep;
+	gl_Position = um4p * um4mv * position;
+	
     vertexData.texcoord = iv2tex_coord;
 
 	vec3 V = -P.xyz;

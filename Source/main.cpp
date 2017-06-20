@@ -188,7 +188,9 @@ typedef struct WaterData
 WaterData water[100];
 TextureData WaterTextureData[100];
 int WaterTimer = 0;
-float seaDep = -2.0; //seaDep must be less than a constant(0 now) or it will be strange
+float seaDep = -2.5; //seaDep must be less than a constant(0 now) or it will be strange
+
+enum SceneObject {Venice, Balloon1, Balloon2, Balloon3};
 
 // load a png image and return a TextureData structure with raw data
 // not limited to png format. works with any image format that is RGBA-32bit
@@ -232,11 +234,12 @@ TextureData loadPNG(const char* const pngFilepath)
 }
 
 Scene scene2_1;
-Scene lakecity;
-Scene city;
-Scene organodron;
-Scene scidowntown;
-Scene castle;
+Scene venice;
+Scene balloon;
+
+vec3 balloon1_pos = vec3(1600.0, 200.0, 1000.0);
+vec3 balloon2_pos = vec3(4000.0, 500.0, 2500.0);
+vec3 balloon3_pos = vec3(6000.0, 300.0, 5000.0);
 
 int mode = 0;
 
@@ -535,10 +538,10 @@ void My_Init()
 	
 	//scene2_1 = LoadScene("./Airbus A310/Airbus A310.obj", "./Airbus A310");
 	//scene2_1 = LoadScene("./water/flow.obj", "./water/");
-	scene2_1 = LoadScene("./Venice/venice.obj", "./Venice/");
+	venice = LoadScene("./Venice/venice.obj", "./Venice/");
 	//scene2_1 = LoadScene("./Medieval/Medieval_City.obj", "./Medieval/");
 	//scene2_1 = LoadScene("./Damaged Downtown/Downtown_Damage_0.obj", "./Damaged Downtown/");
-	//scene2_1 = LoadScene("./obj/obj.obj", "./obj");
+	balloon = LoadScene("./balloon/balloon.obj", "./balloon");
 	//scene2_1 = LoadScene("./Sirus5 Colonial City/sirus city.obj", "./Sirus5 Colonial City");
 	//scene2_1 = LoadScene("./colony sector/colony sector.obj", "./colony sector");
 	//scene2_1 = LoadScene("./The City/The City.obj", "./The City/");
@@ -734,6 +737,7 @@ void My_Init()
 }
 
 void DrawWater() {
+	int flow_speed = 3;
 	glUseProgram(waterProgram);
 	glUniformMatrix4fv(water_um4mv, 1, GL_FALSE, value_ptr(view * model));
 	glUniformMatrix4fv(water_um4p, 1, GL_FALSE, value_ptr(proj_matrix));
@@ -741,17 +745,31 @@ void DrawWater() {
 
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(water_tex, 0);
-	glBindTexture(GL_TEXTURE_2D, water[WaterTimer / 3].tex);
+	glBindTexture(GL_TEXTURE_2D, water[WaterTimer / flow_speed].tex);
 
-	glDrawArrays(GL_TRIANGLES, 0, water[WaterTimer / 3].draw_count);
+	glDrawArrays(GL_TRIANGLES, 0, water[WaterTimer / flow_speed].draw_count);
 
 	WaterTimer++;
-	if (WaterTimer == 300) WaterTimer = 0;
+	if (WaterTimer == flow_speed * 100) WaterTimer = 0;
 }
 
-void DrawScene(Scene scene) {
+void DrawScene(Scene scene, SceneObject SObject) {
 	glUseProgram(program);
-	glUniformMatrix4fv(um4mv, 1, GL_FALSE, value_ptr(view * model));
+
+	mat4 extraTrans = mat4(1.0);
+	mat4 extraScale = mat4(1.0);
+	if (SObject == SceneObject::Balloon1) {
+		extraTrans = translate(mat4(1.0), balloon1_pos);
+		extraScale = scale(mat4(1.0), vec3(0.5,0.5,0.5));
+	}else if (SObject == SceneObject::Balloon2) {
+		extraTrans = translate(mat4(1.0), balloon2_pos);
+		extraScale = scale(mat4(1.0), vec3(0.3, 0.3, 0.3));
+	}else if (SObject == SceneObject::Balloon3) {
+		extraTrans = translate(mat4(1.0), balloon3_pos);
+		extraScale = scale(mat4(1.0), vec3(0.6, 0.6, 0.6));
+	}
+
+	glUniformMatrix4fv(um4mv, 1, GL_FALSE, value_ptr(view * model * extraTrans));
 	glUniformMatrix4fv(um4p, 1, GL_FALSE, value_ptr(proj_matrix));
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(shadowMap, 0);
@@ -854,7 +872,7 @@ void Regular() {
 
 void My_Display()
 {
-	DrawDepthMap(scene2_1);
+	DrawDepthMap(venice);
 	
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
 	glViewport(0, 0, window_size.x, window_size.y);
@@ -870,8 +888,11 @@ void My_Display()
 	view = lookAt(cam_eye, cam_center, cam_up);
 	
 	DrawSky();
-	DrawScene(scene2_1);
-	DrawReflect(scene2_1);
+	DrawScene(venice, SceneObject::Venice);
+	DrawScene(balloon, SceneObject::Balloon1);
+	DrawScene(balloon, SceneObject::Balloon2);
+	DrawScene(balloon, SceneObject::Balloon3);
+	DrawReflect(venice);
 	DrawWater();
 	
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -1030,9 +1051,30 @@ void My_Keyboard(unsigned char key, int x, int y)
 		//moving down:
 		cam_eye -= cam_up * (movementSpeed * (float)timer_speed / 1000);
 		break;
+	case '+':
+		//moving speed +:
+		if(movementSpeed < 990)movementSpeed +=50;
+		break;
+	case '-':
+		//moving speed +:
+		if (movementSpeed > 60)movementSpeed -= 50;
+		break;
+	case '1':
+		//moving speed +:
+		cam_eye = balloon1_pos + vec3(0.0, 13.0, 0.0);
+		break;
+	case '2':
+		//moving speed +:
+		cam_eye = balloon2_pos + vec3(0.0, 10.0, 0.0);
+		break;
+	case '3':
+		//moving speed +:
+		cam_eye = balloon3_pos + vec3(0.0, 15.0, 0.0);
+		break;
 	default:
 		break;
 	}
+	if (cam_eye.y < seaDep + 0.5) cam_eye.y = seaDep + 0.5;
 	printf("cam_pos:(%f, %f, %f)\n", cam_eye.x, cam_eye.y, cam_eye.z);
 }
 
