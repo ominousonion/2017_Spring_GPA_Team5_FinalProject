@@ -239,6 +239,7 @@ TextureData loadPNG(const char* const pngFilepath)
 Scene scene2_1;
 Scene venice;
 Scene balloon;
+Scene boat;
 
 vec3 balloon1_pos = vec3(1600.0, 200.0, 1000.0);
 vec3 balloon2_pos = vec3(4000.0, 250.0, 2500.0);
@@ -558,6 +559,7 @@ void My_Init()
 	//scene2_1 = LoadScene("./Medieval/Medieval_City.obj", "./Medieval/");
 	//scene2_1 = LoadScene("./Damaged Downtown/Downtown_Damage_0.obj", "./Damaged Downtown/");
 	balloon = LoadScene("./balloon/balloon.obj", "./balloon");
+	boat = LoadScene("./boat/SeaAngler.obj", "./boat");
 	//scene2_1 = LoadScene("./Sirus5 Colonial City/sirus city.obj", "./Sirus5 Colonial City");
 	//scene2_1 = LoadScene("./colony sector/colony sector.obj", "./colony sector");
 	//scene2_1 = LoadScene("./The City/The City.obj", "./The City/");
@@ -739,7 +741,7 @@ void My_Init()
 	glGenFramebuffers(1, &FBO);
 
 	modle_pos = vec3(0.0f, 0.0f, 0.0f);
-	cam_eye = vec3(0.0f, 150.0f, 0.0f);
+	cam_eye = vec3(900.0f, 150.0f, 150.0f);
 	cam_up = vec3(0.0f, 1.0f, 0.0f);
 	forward_vec = vec3(1.0f, 0.0f, 0.0f);
 	light_eye = vec3(-400.0f, 1500.0f, 400.0f);
@@ -941,6 +943,7 @@ void My_Display()
 	DrawScene(balloon, SceneObject::Balloon1);
 	DrawScene(balloon, SceneObject::Balloon2);
 	DrawScene(balloon, SceneObject::Balloon3);
+	DrawScene(boat, SceneObject::SmallBoat);
 	DrawReflect(venice);
 	DrawWater();
 	
@@ -1130,10 +1133,10 @@ void My_Keyboard(unsigned char key, int x, int y)
 		if (movementSpeed > 60)movementSpeed -= 50;
 		break;
 	case '1':
-		cam_eye = balloon1_pos + vec3(0.0, 13.0, 0.0);
+		cam_eye = balloon1_pos + vec3(0.0, 12.0, 0.0);
 		break;
 	case '2':
-		cam_eye = balloon2_pos + vec3(0.0, 11.0, 0.0);
+		cam_eye = balloon2_pos + vec3(0.0, 10.0, 0.0);
 		break;
 	case '3':
 		cam_eye = balloon3_pos + vec3(0.0, 15.0, 0.0);
@@ -1145,7 +1148,7 @@ void My_Keyboard(unsigned char key, int x, int y)
 		boat_move = false;
 		break;
 	case 'r':
-		if (!boat_move && boat_now_point != boat_point_num) {
+		if (!boat_move && boat_now_point != boat_point_num && distance(cam_eye , boat_route[0] + vec3(0.0, 1.6, 0.0))<0.1f) {
 			boat_move = true;
 		}
 		else {
