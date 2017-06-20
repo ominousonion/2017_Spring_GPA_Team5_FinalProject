@@ -12,6 +12,7 @@ in VertexData
     vec3 L; // eye space light vector
     vec3 H; // eye space halfway vector
     vec2 texcoord;
+	float draw;
 } vertexData;
 
 uniform sampler2D tex;
@@ -26,7 +27,7 @@ void main()
 	float theta = max(dot(vertexData.N,vertexData.L), 0.0);
 	float phi =  max(dot(vertexData.N,vertexData.H), 0.0);
 	vec3 texColor = texture(tex, vertexData.texcoord).rgb;
-	if(texColor == vec3(0))
+	if(texColor == vec3(0) || vertexData.draw < 0)
 	{
 		discard;
 	}

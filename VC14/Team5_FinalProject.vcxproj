@@ -90,6 +90,8 @@
     <None Include="..\Assets\depth.fs.glsl" />
     <None Include="..\Assets\depth.vs.glsl" />
     <None Include="..\Assets\fragment.fs.glsl" />
+    <None Include="..\Assets\reflect.fs.glsl" />
+    <None Include="..\Assets\reflect.vs.glsl" />
     <None Include="..\Assets\regular.fs.glsl" />
     <None Include="..\Assets\regular.vs.glsl" />
     <None Include="..\Assets\skyfragment.fs.glsl" />

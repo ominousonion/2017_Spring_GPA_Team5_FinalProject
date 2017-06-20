@@ -14,6 +14,7 @@ using namespace glm;
 using namespace std;
 
 GLuint program;
+GLuint reflectProgram;
 GLuint skyProgram;
 GLuint regularProgram;
 GLuint depthProgram;
@@ -47,6 +48,19 @@ GLuint skytex;
 GLuint skyeye;
 GLuint skyvp;
 
+//reflect
+GLint reflect_um4mv;
+GLint reflect_um4p;
+GLuint reflect_tex;
+GLuint reflect_alpha;
+GLuint reflect_seaDep;
+GLuint reflect_Ka;
+GLuint reflect_Kd;
+GLuint reflect_Ks;
+GLint reflect_um4shadow;
+GLuint reflect_shadowMap;
+GLint reflect_uv3lightpos;
+
 vec3 cam_eye;
 vec3 cam_up;
 vec3 cam_center;
@@ -63,9 +77,9 @@ GLuint noiseTexture;
 GLuint depth_fbo;
 GLuint depth_tex;
 
-GLuint water_tex;
 GLint water_um4mv;
 GLint water_um4p;
+GLint water_tex;
 
 static const GLfloat window_positions[] =
 {
@@ -162,8 +176,19 @@ typedef struct Scene
 	unsigned int materialNum;
 }Scene;
 
+typedef struct WaterData
+{
+	GLuint vao;
+	GLuint vbo_position;
+	GLuint vbo_texcoord;
+	GLuint tex;
+	int draw_count;
+}WaterData;
+
+WaterData water[100];
 TextureData WaterTextureData[100];
 int WaterTimer = 0;
+float seaDep = -2.0; //seaDep must be less than a constant(0 now) or it will be strange
 
 // load a png image and return a TextureData structure with raw data
 // not limited to png format. works with any image format that is RGBA-32bit
@@ -358,7 +383,6 @@ Scene LoadScene(const char* const filePath, const char* const directory) {
 			index[3 * f + 0] = mesh->mFaces[f].mIndices[0];
 			index[3 * f + 1] = mesh->mFaces[f].mIndices[1];
 			index[3 * f + 2] = mesh->mFaces[f].mIndices[2];
-
 		}
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sc.shapes[i].ibo);
@@ -418,12 +442,86 @@ void LoadSkybox() {
 
 void LoadWater() {
 	char str[] = "./water/color/water_079_c_0001.jpg"; //27 28 29
+	float sea_X = -100.0f;
+	float sea_Z = -500.0f;
+
+	float texcoords[] = {
+		0.0, 1.0,
+		0.0, 0.0,
+		1.0, 0.0,
+		0.0, 1.0,
+		1.0, 0.0,
+		1.0, 1.0
+	};
+
 	for (int i = 1; i <= 100; i++) {
+
+		float data[18] = {
+
+			sea_X + 0.0f,   seaDep, sea_Z + 100.0f,
+			sea_X + 0.0f,   seaDep, sea_Z + 0.0f,
+			sea_X + 100.0f, seaDep, sea_Z + 0.0f,
+			sea_X + 0.0f,   seaDep, sea_Z + 100.0f,
+			sea_X + 100.0f, seaDep, sea_Z + 0.0f,
+			sea_X + 100.0f, seaDep, sea_Z + 100.0f,
+
+		};	
+
 		int first = i / 100, second = (i / 10) % 10, third = i % 10;
 		str[27] = first + '0'; str[28] = second + '0'; str[29] = third + '0';
-		WaterTextureData[i-1] = loadPNG(str);
+		TextureData texture_data = loadPNG(str);
+		glGenTextures(1, &water[i - 1].tex);
+		glBindTexture(GL_TEXTURE_2D, water[i - 1].tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_data.width, texture_data.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glGenVertexArrays(1, &water[i - 1].vao);
+		glBindVertexArray(water[i - 1].vao);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		float *pos = new float[3 * 6 * 60 * 60];
+
+		for (int x = 0; x < 60; x++) {
+			for (int cnt = 0; cnt < 6; cnt++) {
+				data[cnt * 3] += 6000.0f;
+				data[2 + cnt * 3] += 100.0f;
+			}
+			for (int y = 0; y < 60; y++) {
+				for (int cnt = 0; cnt < 6; cnt++) {
+					data[cnt * 3] -= 100.0f;
+				}
+
+				for (int z = 0; z < 18; z++) {
+					pos[60 * 18 * x + 18 * y + z] = data[z];
+				}
+			}
+		}
+		glGenBuffers(1, &water[i - 1].vbo_position);
+		glBindBuffer(GL_ARRAY_BUFFER, water[i - 1].vbo_position);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * 6 * 60 * 60, pos, GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+		float *tex_coord = new float[2 * 6 * 60 * 60];
+
+		for (int x = 0; x < 60; x++) {
+			for (int y = 0; y < 60; y++) {
+				for (int z = 0; z < 12; z++) {
+					tex_coord[60 * 12 * x + 12 * y + z] = texcoords[z];
+				}
+			}
+		}
+
+		glGenBuffers(1, &water[i - 1].vbo_texcoord);
+		glBindBuffer(GL_ARRAY_BUFFER, water[i - 1].vbo_texcoord);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * 6 * 60 * 60, tex_coord, GL_STATIC_DRAW);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+		delete pos;
+		delete tex_coord;
+
+		water[i - 1].draw_count = 60 * 60 * 6;
 	}
-	
 }
 
 void My_Init()
@@ -435,9 +533,9 @@ void My_Init()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	
-	scene2_1 = LoadScene("./Airbus A310/Airbus A310.obj", "./Airbus A310");
+	//scene2_1 = LoadScene("./Airbus A310/Airbus A310.obj", "./Airbus A310");
 	//scene2_1 = LoadScene("./water/flow.obj", "./water/");
-	//scene2_1 = LoadScene("./Venice/venice.obj", "./Venice/");
+	scene2_1 = LoadScene("./Venice/venice.obj", "./Venice/");
 	//scene2_1 = LoadScene("./Medieval/Medieval_City.obj", "./Medieval/");
 	//scene2_1 = LoadScene("./Damaged Downtown/Downtown_Damage_0.obj", "./Damaged Downtown/");
 	//scene2_1 = LoadScene("./obj/obj.obj", "./obj");
@@ -487,6 +585,34 @@ void My_Init()
 	Kd = glGetUniformLocation(program, "Kd");
 	Ks = glGetUniformLocation(program, "Ks");
 	
+	reflectProgram = glCreateProgram();
+	GLuint reflectVertexShader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint reflectFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	char** reflectVertexShaderSource = loadShaderSource("reflect.vs.glsl");
+	char** reflectFragmentShaderSource = loadShaderSource("reflect.fs.glsl");
+	glShaderSource(reflectVertexShader, 1, reflectVertexShaderSource, NULL);
+	glShaderSource(reflectFragmentShader, 1, reflectFragmentShaderSource, NULL);
+	freeShaderSource(reflectVertexShaderSource);
+	freeShaderSource(reflectFragmentShaderSource);
+	glCompileShader(reflectVertexShader);
+	glCompileShader(reflectFragmentShader);
+	shaderLog(reflectVertexShader);
+	shaderLog(reflectFragmentShader);
+	glAttachShader(reflectProgram, reflectVertexShader);
+	glAttachShader(reflectProgram, reflectFragmentShader);
+	glLinkProgram(reflectProgram);
+	reflect_um4mv = glGetUniformLocation(reflectProgram, "um4mv");
+	reflect_um4p = glGetUniformLocation(reflectProgram, "um4p");
+	reflect_um4shadow = glGetUniformLocation(reflectProgram, "um4shadow");
+	reflect_uv3lightpos = glGetUniformLocation(reflectProgram, "uv3lightpos");
+	reflect_tex = glGetUniformLocation(reflectProgram, "tex");
+	reflect_seaDep = glGetUniformLocation(reflectProgram, "seaDep");
+	reflect_shadowMap = glGetUniformLocation(reflectProgram, "shadowMap");
+	reflect_alpha = glGetUniformLocation(reflectProgram, "alpha");
+	reflect_Ka = glGetUniformLocation(reflectProgram, "Ka");
+	reflect_Kd = glGetUniformLocation(reflectProgram, "Kd");
+	reflect_Ks = glGetUniformLocation(reflectProgram, "Ks");
+
 	skyProgram = glCreateProgram();
 	GLuint skyVertexShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint skyFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -579,28 +705,30 @@ void My_Init()
 	cam_eye = vec3(0.0f, 150.0f, 0.0f);
 	cam_up = vec3(0.0f, 1.0f, 0.0f);
 	forward_vec = vec3(1.0f, 0.0f, 0.0f);
-	light_eye = vec3(-200.0f, 200.0f, 100.0f);
+	light_eye = vec3(4000.0f, 1500.0f, 2000.0f);
 	light_up = vec3(0.0f, 1.0f, 0.0f);
 	light_center = vec3(0.0f, 0.0f, 0.0f);
 	cam_center = cam_eye + forward_vec;
 	
 	model = translate(mat4(1.0f), modle_pos);
 
-	light_proj_matrix = frustum(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1000.0f);
+	light_proj_matrix = ortho(-2500.0f, 2500.0f, -2500.0f, 2500.0f, 0.1f, 10000.0f);
 	light_view_matrix = lookAt(light_eye, light_center, light_up);
 
 	glGenFramebuffers(1, &depth_fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
 	glGenTextures(1, &depth_tex);
 	glBindTexture(GL_TEXTURE_2D, depth_tex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_tex, 0);
+	glDrawBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	My_Reshape(600, 600);
 }
@@ -609,78 +737,13 @@ void DrawWater() {
 	glUseProgram(waterProgram);
 	glUniformMatrix4fv(water_um4mv, 1, GL_FALSE, value_ptr(view * model));
 	glUniformMatrix4fv(water_um4p, 1, GL_FALSE, value_ptr(proj_matrix));
+	glBindVertexArray(water[WaterTimer / 3].vao);
 
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(water_tex, 0);
+	glBindTexture(GL_TEXTURE_2D, water[WaterTimer / 3].tex);
 
-	//Enable shader layout location 0 and 1 for vertex and color   
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-
-	//Create buffer and bind it to OpenGL
-	GLuint buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-
-	float seaDep = -10.0f;
-	float sea_X = -100.0f;
-	float sea_Z = -500.0f;
-
-	float data[18] = {
-
-		sea_X + 0.0f,   seaDep, sea_Z + 100.0f,
-		sea_X + 0.0f,   seaDep, sea_Z + 0.0f,
-		sea_X + 100.0f, seaDep, sea_Z + 0.0f,
-		sea_X + 0.0f,   seaDep, sea_Z + 100.0f,
-		sea_X + 100.0f, seaDep, sea_Z + 0.0f,
-		sea_X + 100.0f, seaDep, sea_Z + 100.0f,
-
-	};
-
-	float texcoords[] = {
-		0.0, 1.0,
-		0.0, 0.0,
-		1.0, 0.0,
-		0.0, 1.0,
-		1.0, 0.0,
-		1.0, 1.0
-	};
-	GLuint waterTex;
-
-	glGenTextures(1, &waterTex);
-	glBindTexture(GL_TEXTURE_2D, waterTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WaterTextureData[WaterTimer/3].width, WaterTextureData[WaterTimer/3].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, WaterTextureData[WaterTimer/3].data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glUniform1i(water_tex, 1);
-
-	GLuint vertexbuffer, texbuffer;
-	
-	glGenBuffers(1, &texbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, texbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, texbuffer);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	for (int i = 0; i < 60; i++) {
-		for (int cnt = 0; cnt < 6; cnt++) {
-			data[cnt * 3] += 6000.0f;
-			data[2 + cnt * 3] += 100.0f;
-		}
-		for (int j = 0; j < 60; j++) {
-			for (int cnt = 0; cnt < 6; cnt++) data[cnt*3] -= 100.0f;
-
-			glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
-			glEnableVertexAttribArray(0);
-			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		}
-	}
+	glDrawArrays(GL_TRIANGLES, 0, water[WaterTimer / 3].draw_count);
 
 	WaterTimer++;
 	if (WaterTimer == 300) WaterTimer = 0;
@@ -716,6 +779,37 @@ void DrawScene(Scene scene) {
 	}
 }
 
+void DrawReflect(Scene scene) {
+	glUseProgram(reflectProgram);
+	glUniformMatrix4fv(reflect_um4mv, 1, GL_FALSE, value_ptr(view * model));
+	glUniformMatrix4fv(reflect_um4p, 1, GL_FALSE, value_ptr(proj_matrix));
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(reflect_shadowMap, 0);
+	glBindTexture(GL_TEXTURE_2D, depth_tex);
+	glActiveTexture(GL_TEXTURE1);
+	glUniform1i(reflect_tex, 1);
+	glUniform1f(reflect_seaDep, seaDep);
+
+	mat4 scale_bias_matrix = translate(mat4(), vec3(0.5f, 0.5f, 0.5f));
+	scale_bias_matrix = scale(scale_bias_matrix, vec3(0.5f, 0.5f, 0.5f));
+	mat4 shadow_sbpv_matrix = scale_bias_matrix*light_proj_matrix* light_view_matrix;
+	mat4 shadow_matrix = shadow_sbpv_matrix * model;
+	glUniformMatrix4fv(reflect_um4shadow, 1, GL_FALSE, value_ptr(shadow_matrix));
+	glUniform3fv(reflect_uv3lightpos, 1, value_ptr(light_eye));
+
+	for (unsigned int i = 0; i < scene.meshNum; ++i) {
+		glBindVertexArray(scene.shapes[i].vao);
+		int materialID = scene.shapes[i].materialID;
+		glBindTexture(GL_TEXTURE_2D, scene.materials[materialID].diffuse_tex);
+		glUniform1f(reflect_alpha, scene.materials[materialID].a);
+		glUniform3fv(reflect_Ka, 1, value_ptr(scene.materials[materialID].Ka));
+		glUniform3fv(reflect_Kd, 1, value_ptr(scene.materials[materialID].Kd));
+		glUniform3fv(reflect_Ks, 1, value_ptr(scene.materials[materialID].Ks));
+		glDrawElements(GL_TRIANGLES, scene.shapes[i].drawCount, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+	}
+}
+
 void DrawSky() {
 	glUseProgram(skyProgram);
 	glUniformMatrix3fv(skyeye, 1, GL_FALSE, value_ptr(cam_eye));
@@ -730,12 +824,12 @@ void DrawSky() {
 }
 
 void DrawDepthMap(Scene scene) {
-	glEnable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT); 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(4.0f, 4.0f);
 	glUseProgram(depthProgram);
+	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUniformMatrix4fv(depth_um4mv, 1, GL_FALSE, value_ptr(light_view_matrix * model));
 	glUniformMatrix4fv(depth_um4p, 1, GL_FALSE, value_ptr(light_proj_matrix));
@@ -745,17 +839,15 @@ void DrawDepthMap(Scene scene) {
 		glDrawElements(GL_TRIANGLES, scene.shapes[i].drawCount, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
-}
 
-void DrawReflection(Scene scene) {
-	glViewport(0, 0, 1024, 1024);
-
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Regular() {
 	glUseProgram(regularProgram);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(window_vao);
+	//glBindTexture(GL_TEXTURE_2D, depth_tex);
 	glBindTexture(GL_TEXTURE_2D, FBODataTexture);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -763,7 +855,7 @@ void Regular() {
 void My_Display()
 {
 	DrawDepthMap(scene2_1);
-
+	
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
 	glViewport(0, 0, window_size.x, window_size.y);
 	glDrawBuffer(FBO);
@@ -779,8 +871,9 @@ void My_Display()
 	
 	DrawSky();
 	DrawScene(scene2_1);
+	DrawReflect(scene2_1);
 	DrawWater();
-
+	
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glViewport(0, 0, window_size.x, window_size.y);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -819,6 +912,8 @@ void My_Reshape(int width, int height)
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRBO);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBODataTexture, 0);
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void My_Timer(int val)
