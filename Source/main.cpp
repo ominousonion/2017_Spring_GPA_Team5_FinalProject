@@ -194,7 +194,7 @@ TextureData WaterTextureData[100];
 int WaterTimer = 0;
 float seaDep = -2.5; //seaDep must be less than a constant(0 now) or it will be strange
 
-enum SceneObject {Venice, Balloon1, Balloon2, Balloon3};
+enum SceneObject {Venice, Balloon1, Balloon2, Balloon3, SmallBoat};
 
 // load a png image and return a TextureData structure with raw data
 // not limited to png format. works with any image format that is RGBA-32bit
@@ -240,10 +240,12 @@ TextureData loadPNG(const char* const pngFilepath)
 Scene scene2_1;
 Scene venice;
 Scene balloon;
+Scene boat;
 
 vec3 balloon1_pos = vec3(1600.0, 200.0, 1000.0);
-vec3 balloon2_pos = vec3(4000.0, 500.0, 2500.0);
-vec3 balloon3_pos = vec3(6000.0, 300.0, 5000.0);
+vec3 balloon2_pos = vec3(4000.0, 250.0, 2500.0);
+vec3 balloon3_pos = vec3(2500.0, 150.0, 3000.0);
+vec3 boat_route = vec3(1330.0, 0.0, 1140.0);
 
 int mode = 0;
 
@@ -452,6 +454,8 @@ void LoadWater() {
 	float sea_X = -100.0f;
 	float sea_Z = -500.0f;
 
+	int scale = 3;
+
 	float texcoords[] = {
 		0.0, 1.0,
 		0.0, 0.0,
@@ -462,15 +466,15 @@ void LoadWater() {
 	};
 
 	for (int i = 1; i <= 100; i++) {
-
+		
 		float data[18] = {
 
-			sea_X + 0.0f,   seaDep, sea_Z + 100.0f,
-			sea_X + 0.0f,   seaDep, sea_Z + 0.0f,
-			sea_X + 100.0f, seaDep, sea_Z + 0.0f,
-			sea_X + 0.0f,   seaDep, sea_Z + 100.0f,
-			sea_X + 100.0f, seaDep, sea_Z + 0.0f,
-			sea_X + 100.0f, seaDep, sea_Z + 100.0f,
+			sea_X + 0.0f - scale * 2000.0f,   seaDep, sea_Z + 100.0f - scale * 2000.0f,
+			sea_X + 0.0f - scale * 2000.0f,   seaDep, sea_Z + 0.0f - scale * 2000.0f,
+			sea_X + 100.0f - scale * 2000.0f, seaDep, sea_Z + 0.0f - scale * 2000.0f,
+			sea_X + 0.0f - scale * 2000.0f,   seaDep, sea_Z + 100.0f - scale * 2000.0f,
+			sea_X + 100.0f - scale * 2000.0f, seaDep, sea_Z + 0.0f - scale * 2000.0f,
+			sea_X + 100.0f - scale * 2000.0f, seaDep, sea_Z + 100.0f - scale * 2000.0f,
 
 		};	
 
@@ -487,47 +491,47 @@ void LoadWater() {
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
-		float *pos = new float[3 * 6 * 60 * 60];
+		float *pos = new float[3 * 6 * 60 * 60 * scale * scale];
 
-		for (int x = 0; x < 60; x++) {
+		for (int x = 0; x < 60 * scale; x++) {
 			for (int cnt = 0; cnt < 6; cnt++) {
-				data[cnt * 3] += 6000.0f;
+				data[cnt * 3] += scale * 6000.0f;
 				data[2 + cnt * 3] += 100.0f;
 			}
-			for (int y = 0; y < 60; y++) {
+			for (int y = 0; y < 60 * scale; y++) {
 				for (int cnt = 0; cnt < 6; cnt++) {
 					data[cnt * 3] -= 100.0f;
 				}
 
 				for (int z = 0; z < 18; z++) {
-					pos[60 * 18 * x + 18 * y + z] = data[z];
+					pos[60 * scale * 18 * x + 18 * y + z] = data[z];
 				}
 			}
 		}
 		glGenBuffers(1, &water[i - 1].vbo_position);
 		glBindBuffer(GL_ARRAY_BUFFER, water[i - 1].vbo_position);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * 6 * 60 * 60, pos, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * 6 * 60 * 60 * scale * scale, pos, GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-		float *tex_coord = new float[2 * 6 * 60 * 60];
+		float *tex_coord = new float[2 * 6 * 60 * 60 * scale * scale];
 
-		for (int x = 0; x < 60; x++) {
-			for (int y = 0; y < 60; y++) {
+		for (int x = 0; x < 60 * scale; x++) {
+			for (int y = 0; y < 60 * scale; y++) {
 				for (int z = 0; z < 12; z++) {
-					tex_coord[60 * 12 * x + 12 * y + z] = texcoords[z];
+					tex_coord[60 * scale * 12 * x + 12 * y + z] = texcoords[z];
 				}
 			}
 		}
 
 		glGenBuffers(1, &water[i - 1].vbo_texcoord);
 		glBindBuffer(GL_ARRAY_BUFFER, water[i - 1].vbo_texcoord);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * 6 * 60 * 60, tex_coord, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * 6 * 60 * 60 * scale * scale, tex_coord, GL_STATIC_DRAW);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
 		delete pos;
 		delete tex_coord;
 
-		water[i - 1].draw_count = 60 * 60 * 6;
+		water[i - 1].draw_count = 60 * 60 * scale * scale * 6;
 	}
 }
 
@@ -546,6 +550,8 @@ void My_Init()
 	//scene2_1 = LoadScene("./Medieval/Medieval_City.obj", "./Medieval/");
 	//scene2_1 = LoadScene("./Damaged Downtown/Downtown_Damage_0.obj", "./Damaged Downtown/");
 	balloon = LoadScene("./balloon/balloon.obj", "./balloon");
+	//boat = LoadScene("./boat/SuperBoat.obj", "./boat");
+	boat = LoadScene("./boat/SeaAngler.obj", "./boat"); 
 	//scene2_1 = LoadScene("./Sirus5 Colonial City/sirus city.obj", "./Sirus5 Colonial City");
 	//scene2_1 = LoadScene("./colony sector/colony sector.obj", "./colony sector");
 	//scene2_1 = LoadScene("./The City/The City.obj", "./The City/");
@@ -772,6 +778,10 @@ void DrawScene(Scene scene, SceneObject SObject) {
 		extraTrans = translate(mat4(1.0), balloon3_pos);
 		extraScale = scale(mat4(1.0), vec3(0.6, 0.6, 0.6));
 	}
+	else if (SObject == SceneObject::SmallBoat) {
+		extraTrans = translate(mat4(1.0), boat_route);
+		//extraScale = scale(mat4(1.0), vec3(0.6, 0.6, 0.6));
+	}
 
 	glUniformMatrix4fv(um4mv, 1, GL_FALSE, value_ptr(view * model * extraTrans));
 	glUniformMatrix4fv(um4p, 1, GL_FALSE, value_ptr(proj_matrix));
@@ -896,6 +906,7 @@ void My_Display()
 	DrawScene(balloon, SceneObject::Balloon1);
 	DrawScene(balloon, SceneObject::Balloon2);
 	DrawScene(balloon, SceneObject::Balloon3);
+	DrawScene(boat, SceneObject::SmallBoat);
 	DrawReflect(venice);
 	DrawWater();
 	
@@ -1069,7 +1080,7 @@ void My_Keyboard(unsigned char key, int x, int y)
 		break;
 	case '2':
 		//moving speed +:
-		cam_eye = balloon2_pos + vec3(0.0, 10.0, 0.0);
+		cam_eye = balloon2_pos + vec3(0.0, 11.0, 0.0);
 		break;
 	case '3':
 		//moving speed +:
