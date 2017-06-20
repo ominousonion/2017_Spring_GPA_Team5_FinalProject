@@ -81,6 +81,10 @@ GLint water_um4mv;
 GLint water_um4p;
 GLint water_tex;
 
+GLuint partical_vao;
+GLuint partical_vbo;
+
+
 static const GLfloat window_positions[] =
 {
 	1.0f,-1.0f,1.0f,0.0f,
